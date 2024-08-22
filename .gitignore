@@ -28,3 +28,6 @@ replay_pid*
 
 .gradle
 !gradle/wrapper/gradle-wrapper.jar
+
+# configuration file
+**/gameConfig.json

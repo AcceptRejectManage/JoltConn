@@ -6,11 +6,16 @@ package joltconnapp;
 import java.io.File;
 
 import joltconnlib.FolderState;
+import joltconnlib.DataStoreState;
 
 public class App {
 
     public static void main(String[] args) {
-        FolderState s = new FolderState();
-        System.out.println(s.parseDirectory(new File("..")));
+        FolderState fs = new FolderState();
+
+        DataStoreState dss = new DataStoreState();
+        DataStoreState.setGameStateFromFile(new File("gameConfig.json"));
+        dss.parseDirectory();
+        System.out.println(fs.parseDirectory(new File("..")));
     }
 }

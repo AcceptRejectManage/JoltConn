@@ -11,11 +11,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
+import java.nio.file.Files;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.List;
 
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.raeleus.gamejoltapi.GameJoltRequest;
-import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreSetRequest;
+import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreFetchRequest;
+import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreGetKeysRequest;
 
 public class DataStoreState {
     
@@ -51,22 +57,36 @@ public class DataStoreState {
         
     }
 
-    public static void setGameStateFromFile(File path) {
+    public static void setGameStateFromFile(File path, String gameName) {
 
-        /* TODO */
+        if (path.isFile()) {
+            try {
+                String jsonString = Files.readString(path.toPath());
+                JsonReader reader = new JsonReader();
+                JsonValue json = reader.parse(jsonString);
+                for (JsonValue game = json.child; game != null; game = game.next) {
+                    if (game.name.equals(gameName)) {
+                        String key = game.getString("GameKey");
+                        String id = game.getString("GameID");
+                        setGameState(key, id);
+                    }
+                }
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public void parseDirectory() {
-
-        String JoltPath =  GetRawUrl(DataStoreSetRequest.builder().gameID(GameID).key("ABC").data("CCC").build());
-
+    public String performRequest(String path) {
+        
         try{    
             
-            URI uri = GetEncodedUrl(JoltPath);
+            URI uri = GetEncodedUrl(path);
             HttpRequest r = HttpRequest.newBuilder().uri(uri).GET().build();
             BodyHandler<String> bh = HttpResponse.BodyHandlers.ofString();
             HttpResponse<String> response = HttpClient.newHttpClient().send(r, bh);
-            System.out.println(response.body());
+            return response.body();
             
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -74,6 +94,30 @@ public class DataStoreState {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    public void parseDirectory() {
+
+        List<String> webFiles = new ArrayList<String>();
+
+        String keysRequestAsJsonStr = performRequest( GetRawUrl(DataStoreGetKeysRequest.builder().gameID(GameID).build()));
+        JsonReader reader = new JsonReader();
+        JsonValue json = reader.parse(keysRequestAsJsonStr);
+        JsonValue keysArray = json.get("response").get("keys");
+        if (keysArray != null && keysArray.child() != null) {
+            for (JsonValue key = keysArray.child; key != null; key = key.next) {
+                String keyLabel = key.getString("key");
+                webFiles.add(keyLabel);
+                String keyJson = performRequest( GetRawUrl(DataStoreFetchRequest.builder().gameID(GameID).key(keyLabel).build()));
+
+                JsonValue result = reader.parse(keyJson);
+                String keyData = result.get("response").getString("data");
+
+                System.out.println(keyData);
+            }
         }
     }
 }

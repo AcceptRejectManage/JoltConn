@@ -14,8 +14,9 @@ public class App {
         FolderState fs = new FolderState();
 
         DataStoreState dss = new DataStoreState();
-        DataStoreState.setGameStateFromFile(new File("gameConfig.json"));
+        DataStoreState.setGameStateFromFile(new File("gameConfig.json"), "gameA");
         dss.parseDirectory();
+        
         System.out.println(fs.parseDirectory(new File("..")));
     }
 }

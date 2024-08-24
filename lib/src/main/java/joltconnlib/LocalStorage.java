@@ -1,6 +1,7 @@
 package joltconnlib;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,51 +12,77 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HexFormat;
 
+import javax.swing.filechooser.FileFilter;
+
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
-public class FolderState {
+public class LocalStorage {
     
-    Path folderPath;
-    
-    public String parseDirectory(File path) {
-        if (!setPath(path)) {
-            return "";
+    private class Filter implements FilenameFilter {
+        private final String[] filters;
+
+        Filter(String[] filters) {
+            this.filters = filters;
         }
 
-        File[] files = scanFolder();
-        if (files == null) {
-            return "";
+        @Override
+        public boolean accept(File dir, String name) {
+            int index = Arrays.binarySearch(filters, name);
+            return (!name.startsWith("__")) && (index < 0);
         }
+        
+    }
+    private final Configuration configuration;
+    private final MetaDataObject metaDataObject;
 
-        ArrayList<JoltEntry> entries = calculateHashes(files);
-        if (entries == null) {
-            return "";
-        }
-
-        return jsonifyFiles(entries);
+    public LocalStorage(Configuration configuration) {
+        this.configuration = configuration;
+        this.metaDataObject = buildMetaObject();
     }
 
-    public boolean setPath(File file) {
-        if (!file.isDirectory()) {
-            folderPath = null;
-            return false;
+    private MetaDataObject buildMetaObject() {
+        final File workdir = configuration.getPath();
+        String[] filters = new String[0];
+        MetaDataObject metaObject = new MetaDataObject();
+
+        /* read filters if present */
+        File filterFile = new File(workdir, MetaDataObject.FILTER_FILE);
+        if (filterFile.isFile()) {
+            String filterText = null;
+            try {
+                filterText = Files.readString(filterFile.toPath());
+            } catch (IOException e) {
+                ;
+            }
+            if (filterText != null) {
+                filters = filterText.split("(\\s|\\n)+");
+                Arrays.sort(filters);
+                metaObject.addAllFilters(filters);
+            }
         }
-        folderPath = file.toPath();
-        return true;
-    }
 
-    public File[] scanFolder() {
-        File[] result = folderPath.toFile().listFiles(file -> file.isFile());
-        Arrays.sort(result, Comparator.comparing(File::getName));
-        return result;
-    }
+        File[] files = workdir.listFiles(new Filter(filters));
 
-
-    public ArrayList<JoltEntry> calculateHashes(File[] scannedFiles) {
-        if (scannedFiles.length == 0) {
+        if (files == null || files.length == 0) {
             return null;
         }
+
+        /* important to sort now, as metahash rely on file order */
+        Arrays.sort(files, Comparator.comparing(File::getName));
+        
+        // build the rest of meta object params
+        ArrayList<JoltEntry> entries = calculateHashes(files);
+        if (entries == null) {
+            return null;
+        }
+
+        /* check if metaobject in directory is equal with calculated; if not - save it */
+        return metaObject;
+        //return jsonifyFiles(entries);
+    }
+
+    public ArrayList<JoltEntry> calculateHashes(File[] scannedFiles) {
         try
         {
             MessageDigest crypt = MessageDigest.getInstance("SHA-1");

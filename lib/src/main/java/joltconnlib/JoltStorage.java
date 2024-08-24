@@ -23,7 +23,7 @@ import com.github.raeleus.gamejoltapi.GameJoltRequest;
 import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreFetchRequest;
 import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreGetKeysRequest;
 
-public class DataStoreState {
+public class JoltStorage {
     
     private static final String GameJoltSite = "https://api.gamejolt.com/api/game/";
     private static final String GameJoltVersion = "v1_2";
@@ -41,7 +41,7 @@ public class DataStoreState {
         return uri;
     }
 
-    public DataStoreState() {
+    public JoltStorage() {
         MessageDigest temp;
         try{
             temp = MessageDigest.getInstance("SHA-1");
@@ -52,8 +52,8 @@ public class DataStoreState {
         sha = temp;
     }
     public static void setGameState(String GameKey, String GameID) {
-        DataStoreState.GameKey = GameKey;
-        DataStoreState.GameID = GameID;
+        JoltStorage.GameKey = GameKey;
+        JoltStorage.GameID = GameID;
         
     }
 
@@ -63,15 +63,12 @@ public class DataStoreState {
             try {
                 String jsonString = Files.readString(path.toPath());
                 JsonReader reader = new JsonReader();
-                JsonValue json = reader.parse(jsonString);
-                for (JsonValue game = json.child; game != null; game = game.next) {
-                    if (game.name.equals(gameName)) {
-                        String key = game.getString("GameKey");
-                        String id = game.getString("GameID");
-                        setGameState(key, id);
-                    }
+                JsonValue json = reader.parse(jsonString).get(gameName);
+                if (json != null) {
+                    String key = json.getString("GameKey");
+                    String id = json.getString("GameID");
+                    setGameState(key, id);
                 }
-                
             } catch (Exception e) {
                 e.printStackTrace();
             }

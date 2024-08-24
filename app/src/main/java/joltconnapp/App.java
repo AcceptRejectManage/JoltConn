@@ -5,18 +5,24 @@ package joltconnapp;
 
 import java.io.File;
 
-import joltconnlib.FolderState;
-import joltconnlib.DataStoreState;
+import joltconnlib.LocalStorage;
+import joltconnlib.Configuration;
+import joltconnlib.JoltStorage;
 
 public class App {
 
     public static void main(String[] args) {
-        FolderState fs = new FolderState();
 
-        DataStoreState dss = new DataStoreState();
-        DataStoreState.setGameStateFromFile(new File("gameConfig.json"), "gameA");
-        dss.parseDirectory();
+        Configuration config = new Configuration(new File("./gameConfig.json"), "gameA");
+        LocalStorage fs = new LocalStorage(config);
+
         
-        System.out.println(fs.parseDirectory(new File("..")));
+        // FolderState fs = new FolderState();
+
+        // DataStoreState dss = new DataStoreState();
+        // DataStoreState.setGameStateFromFile(new File("gameConfig.json"), "gameA");
+        // dss.parseDirectory();
+        
+        // System.out.println(fs.parseDirectory(new File("..")));
     }
 }

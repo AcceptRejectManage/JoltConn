@@ -17,13 +17,7 @@ public class App {
         localStorage.writeMetaFilesToDisk();
         JoltStorage joltStorage = new JoltStorage(new Configuration(new File("./gameConfig.json"), "gameB"));
         joltStorage.writeMetaFilesToDisk();
+        joltStorage.writeFilesToDisk();
         
-        // FolderState fs = new FolderState();
-
-        // DataStoreState dss = new DataStoreState();
-        // DataStoreState.setGameStateFromFile(new File("gameConfig.json"), "gameA");
-        // dss.parseDirectory();
-        
-        // System.out.println(fs.parseDirectory(new File("..")));
     }
 }

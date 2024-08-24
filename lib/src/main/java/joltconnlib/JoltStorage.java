@@ -185,17 +185,10 @@ public class JoltStorage {
                 for (JsonValue key = keysArray.child; key != null; key = key.next) {
                     String keyLabel = key.getString("key");
                     webKeys.add(keyLabel);
-                    // String keyJson = performRequest( GetRawUrl(DataStoreFetchRequest.builder().gameID(GameID).key(keyLabel).build()));
-
-                    // JsonValue result = reader.parse(keyJson);
-                    // String keyData = result.get("response").getString("data");
-
-                    // System.out.println(keyData);
                 }
             }
         }
         return webKeys;
-        //return webKeys.toArray(new String[webKeys.size()]);
     }
 
     // private boolean deleteKey(String key) {
@@ -273,6 +266,23 @@ public class JoltStorage {
         }
     }
 
+    public void writeFilesToDisk() {
+        JoltEntry[] entries = metaDataObject.getEntries();
+        for (JoltEntry entry: entries) {
+            String entryStringified = getKey(entry.key);
+            if (entryStringified != null) {
+                try {
+                    Path filePath = new File(configuration.getPath(), entry.key).toPath();
+                    Files.writeString(filePath, entryStringified, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                } catch (IOException e) {
+                    System.out.println("File " + entry.key + " was not written");
+                }
+            } else {
+                System.out.println("File " + entry.key + " was not present in the data store but was preset on metadata");
+            }
+        }
+    }   
+    
     private String jsonifyEntries(JoltEntry[] files) {
         JsonValue root = new JsonValue(JsonValue.ValueType.object);
         for (JoltEntry entry: files) {

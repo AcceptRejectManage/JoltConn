@@ -13,9 +13,10 @@ public class App {
 
     public static void main(String[] args) {
 
-        Configuration config = new Configuration(new File("./gameConfig.json"), "gameA");
-        LocalStorage fs = new LocalStorage(config);
-
+        LocalStorage localStorage = new LocalStorage(new Configuration(new File("./gameConfig.json"), "gameA"));
+        localStorage.writeMetaFilesToDisk();
+        JoltStorage joltStorage = new JoltStorage(new Configuration(new File("./gameConfig.json"), "gameB"));
+        joltStorage.writeMetaFilesToDisk();
         
         // FolderState fs = new FolderState();
 

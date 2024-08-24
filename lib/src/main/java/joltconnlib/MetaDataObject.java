@@ -1,37 +1,41 @@
 package joltconnlib;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.TreeSet;
-
 
 public class MetaDataObject {
 
     public static String FILTER_FILE = "__filter";
     public static String METAHASH_FILE = "__metahash";
     public static String METADATA_FILE = "__metadata";
-    ArrayList<JoltEntry> files;
-    TreeSet<JoltEntry> sortedFiles;
-    byte[] metaHash;
-    ArrayList<String> filter;
-    TreeSet<String> sortedFilter;
+
+    private TreeSet<JoltEntry> sortedFiles;
+    private String metaHash;
+    private TreeSet<String> sortedFilter;
+
+    private boolean fresh;
 
     MetaDataObject() {
-        files = new ArrayList<>();
         sortedFiles = new TreeSet<JoltEntry>((JoltEntry left, JoltEntry right) -> left.key.compareTo(right.key));
         metaHash = null;
-        filter = new ArrayList<>();
         sortedFilter = new TreeSet<>((String left, String right) -> left.compareTo(right));
+        fresh = true;
     }
 
     public void addEntry(JoltEntry entry) {
-        //files.add(entry);
         sortedFiles.add(entry);
     }
 
+    public void addAllEntries(ArrayList<JoltEntry> entries) {
+        sortedFiles.clear();
+        sortedFiles.addAll(entries);
+    }
+
+    public JoltEntry[] getEntries() {
+        return sortedFiles.toArray(new JoltEntry[sortedFiles.size()]);
+    }
+    
     public void addFilter(String path) {
         sortedFilter.add(path);
     }
@@ -41,12 +45,32 @@ public class MetaDataObject {
         sortedFilter.addAll(Arrays.asList(paths));
     }
 
-    public void calculateMetaHash(MessageDigest sha) {
-        //sort ?? should be already sorted
+    public String[] getFilters() {
+        return sortedFilter.toArray(new String[sortedFilter.size()]);
+    }
 
+    public void setMetaHash(String metaHash) {
+        this.metaHash = metaHash;
+    }
+
+    public String getMetaHash() {
+        return metaHash;
+    }
+
+    public boolean otherMetaHashEqual(String otherMetaHash) {
+        return otherMetaHash.equals(metaHash);
     }
 
     public boolean isEmpty() {
-        return files.size() == 0 || metaHash == null;
+        return sortedFiles.size() == 0 || metaHash == null;
     }
+
+    public void invalidate() {
+        fresh = false;
+    }
+
+    public boolean isFresh() {
+        return fresh;
+    }
+
 }

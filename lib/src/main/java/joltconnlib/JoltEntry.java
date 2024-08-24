@@ -1,10 +1,10 @@
 package joltconnlib;
 
 public class JoltEntry {
-    byte[] sha;
+    String sha;
     String key;
 
-    public JoltEntry(byte[] sha, String key) {
+    public JoltEntry(String sha, String key) {
         this.sha = sha;
         this.key = key;
     }

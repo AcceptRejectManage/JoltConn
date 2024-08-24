@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -12,13 +13,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HexFormat;
 
-import javax.swing.filechooser.FileFilter;
-
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
 public class LocalStorage {
     
+    private final Configuration configuration;
+    private final MetaDataObject metaDataObject;
+
     private class Filter implements FilenameFilter {
         private final String[] filters;
 
@@ -33,8 +35,6 @@ public class LocalStorage {
         }
         
     }
-    private final Configuration configuration;
-    private final MetaDataObject metaDataObject;
 
     public LocalStorage(Configuration configuration) {
         this.configuration = configuration;
@@ -51,7 +51,7 @@ public class LocalStorage {
         if (filterFile.isFile()) {
             String filterText = null;
             try {
-                filterText = Files.readString(filterFile.toPath());
+                filterText = Files.readString(filterFile.toPath()).strip();
             } catch (IOException e) {
                 ;
             }
@@ -72,55 +72,76 @@ public class LocalStorage {
         Arrays.sort(files, Comparator.comparing(File::getName));
         
         // build the rest of meta object params
-        ArrayList<JoltEntry> entries = calculateHashes(files);
-        if (entries == null) {
-            return null;
-        }
+        calculateHashes(files, metaObject);
 
-        /* check if metaobject in directory is equal with calculated; if not - save it */
+        /* TODO check if metaobject in directory is equal with calculated; if not - save it */
         return metaObject;
-        //return jsonifyFiles(entries);
     }
 
-    public ArrayList<JoltEntry> calculateHashes(File[] scannedFiles) {
+    private void calculateHashes(File[] scannedFiles, MetaDataObject metaObject) {
+        ArrayList<JoltEntry> entries = new ArrayList<JoltEntry>();
         try
         {
             MessageDigest crypt = MessageDigest.getInstance("SHA-1");
             MessageDigest cryptSum = MessageDigest.getInstance("SHA-1");
             cryptSum.reset();
-            ArrayList<JoltEntry> entries = new ArrayList<JoltEntry>();
             for (File file: scannedFiles) {
                 try{
                     byte[] fileData = Files.readAllBytes(file.toPath());
                     crypt.reset();
                     crypt.update(fileData);
                     byte[] fileDigest = crypt.digest();
-                    entries.add(new JoltEntry(fileDigest, file.getName()));
+                    entries.add(new JoltEntry(HexFormat.of().formatHex(fileDigest), file.getName()));
                     cryptSum.update(fileDigest);
                 } catch(IOException e) {
                     System.out.println("File corrupted - "+file.getName());
                     e.printStackTrace();
                 }
             }
-            entries.add(new JoltEntry(cryptSum.digest(), "__metadata"));
-            return entries;
-        }
-        catch(NoSuchAlgorithmException e)
-        {
+            metaObject.addAllEntries(entries);
+            metaObject.setMetaHash(HexFormat.of().formatHex(cryptSum.digest()));
+        } catch(NoSuchAlgorithmException e) {
             System.out.println("No SHA-1 on this machine");
             e.printStackTrace();
         }
-        return null;
     }
 
-    public String jsonifyFiles(ArrayList<JoltEntry> files) {
+    public void writeMetaFilesToDisk() {
+        Path filterPath = new File(configuration.getPath(), MetaDataObject.FILTER_FILE).toPath();
+        try {
+            Files.writeString(filterPath, String.join("\n", metaDataObject.getFilters()), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            System.out.println("Filter file was not written");
+        }
+
+        Path metaHashPath = new File(configuration.getPath(), MetaDataObject.METAHASH_FILE).toPath();
+        try {
+            Files.writeString(metaHashPath, String.join("\n", metaDataObject.getMetaHash()), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            System.out.println("MetaHash file was not written");
+        }
+
+        Path metaHashData = new File(configuration.getPath(), MetaDataObject.METADATA_FILE).toPath();
+        try {
+            String entries = jsonifyEntries(metaDataObject.getEntries());
+            Files.writeString(metaHashData, entries, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            System.out.println("MetaData file was not written");
+        }
+    }
+
+    private String jsonifyEntries(JoltEntry[] files) {
         JsonValue root = new JsonValue(JsonValue.ValueType.object);
         for (JoltEntry entry: files) {
             String key = entry.key;
-            String sha = HexFormat.of().formatHex(entry.sha);
+            String sha = (entry.sha);
             JsonValue element = new JsonValue(sha);
             root.addChild(key, element);
         }
         return root.toJson(OutputType.json);
+    }
+
+    public void PushFolderToJolt() {
+        
     }
 }

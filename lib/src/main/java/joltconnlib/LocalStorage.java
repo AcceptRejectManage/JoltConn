@@ -16,10 +16,14 @@ import java.util.HexFormat;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
+import joltconnlib.backend.IJson;
+import joltconnlib.backend.ISync;
+
 public class LocalStorage {
     
     private final Configuration configuration;
     private final MetaDataObject metaDataObject;
+    private final ISync sync;
 
     private class Filter implements FilenameFilter {
         private final String[] filters;
@@ -36,9 +40,11 @@ public class LocalStorage {
         
     }
 
-    public LocalStorage(Configuration configuration) {
+    public LocalStorage(Configuration configuration, ISync sync) {
         this.configuration = configuration;
+        this.sync = sync;
         this.metaDataObject = buildMetaObject();
+
     }
 
     private MetaDataObject buildMetaObject() {
@@ -46,6 +52,7 @@ public class LocalStorage {
         String[] filters = new String[0];
         MetaDataObject metaObject = new MetaDataObject();
 
+        
         /* read filters if present */
         File filterFile = new File(workdir, MetaDataObject.FILTER_FILE);
         if (filterFile.isFile()) {

@@ -7,12 +7,14 @@
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
-    id 'application'
+    id 'java-library'
 }
 
 dependencies {
     // Use JUnit Jupiter for testing.
     implementation project(":lib")
+    implementation 'com.github.raeleus:game-jolt-api:0.0.5'
+    
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -21,10 +23,5 @@ dependencies {
 //         languageVersion = JavaLanguageVersion.of(17)
 //     }
 // }
-
-application {
-    // Define the main class for the application.
-    mainClass = 'joltconnapp.App'
-}
 
 

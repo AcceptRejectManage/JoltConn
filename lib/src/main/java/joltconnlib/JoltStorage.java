@@ -29,6 +29,9 @@ import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreFetchRequest;
 import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreGetKeysRequest;
 import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreRemoveRequest;
 
+import joltconnlib.backend.IJson;
+import joltconnlib.backend.ISync;
+
 public class JoltStorage {
     
     private static final String GameJoltSite = "https://api.gamejolt.com/api/game/";
@@ -36,8 +39,9 @@ public class JoltStorage {
     private final MessageDigest urlSha;
     private final Configuration configuration;
     private final MetaDataObject metaDataObject;
+    private final ISync sync;
 
-    public JoltStorage(Configuration configuration) {
+    public JoltStorage(Configuration configuration, ISync sync) {
         MessageDigest temp;
         try{
             temp = MessageDigest.getInstance("SHA-1");
@@ -47,10 +51,12 @@ public class JoltStorage {
         }
         urlSha = temp;
         this.configuration = configuration;
+        this.sync = sync;
         this.metaDataObject = buildMetaObject();
+
     }
 
-    public JoltStorage(Configuration configuration, MetaDataObject folderObject) {
+    public JoltStorage(Configuration configuration, MetaDataObject folderObject, ISync sync) {
         MessageDigest temp;
         MetaDataObject tempObject;
         try{
@@ -65,6 +71,7 @@ public class JoltStorage {
 
         tempObject = buildMetaObject();
         this.metaDataObject = tempObject;
+        this.sync = sync;
     }
 
     // private boolean isSynced(MetaDataObject folderObject) {
@@ -86,6 +93,15 @@ public class JoltStorage {
         // get all keys
         List<String> keys = getWebKeys();
 
+        List<String> l = sync.getAllEntries(configuration.getID(), configuration.getKey());
+        String tmp = sync.getEntry("AAA", configuration.getID(), configuration.getKey());
+        if (l != null && l.size() > 0){
+        String tmp2 = sync.getEntry(l.get(0), configuration.getID(), configuration.getKey());
+        System.out.println(tmp2);
+        }
+        System.out.println(l);
+        System.out.println(tmp);
+
 
         // try downloading metadata
         int metaDataIndex = keys.indexOf(MetaDataObject.METADATA_FILE);
@@ -93,7 +109,6 @@ public class JoltStorage {
             String metaData = getKey(MetaDataObject.METADATA_FILE);
             keys.remove(metaDataIndex);
         }
-        
 
         // try downloading filter
         int filterIndex = keys.indexOf(MetaDataObject.FILTER_FILE);

@@ -1,8 +1,12 @@
 package joltconnlib.backend;
 
-import java.util.List;
+import java.security.MessageDigest;
+
+import joltconnlib.backend.Containers.JoltArrayOfStringsContainer;
+import joltconnlib.backend.Containers.JoltStringContainer;
 
 public interface ISync {
-    public String getEntry(String key, String GameID, String GameKey);
-    public List<String> getAllEntries(String GameID, String GameKey); 
+    public void getEntry(String key, String GameID, String GameKey, JoltStringContainer result);
+    public void getAllEntries(final String GameID, final String GameKey, JoltArrayOfStringsContainer result) ;
+    public MessageDigest getSha();
 }

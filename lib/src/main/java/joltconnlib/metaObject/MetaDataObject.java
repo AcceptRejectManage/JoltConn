@@ -1,4 +1,4 @@
-package joltconnlib;
+package joltconnlib.metaObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +16,7 @@ public class MetaDataObject {
 
     private boolean fresh;
 
-    MetaDataObject() {
+    public MetaDataObject() {
         sortedFiles = new TreeSet<JoltEntry>((JoltEntry left, JoltEntry right) -> left.key.compareTo(right.key));
         metaHash = null;
         sortedFilter = new TreeSet<>((String left, String right) -> left.compareTo(right));

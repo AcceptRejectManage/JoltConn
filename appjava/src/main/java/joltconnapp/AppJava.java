@@ -18,9 +18,9 @@ public class AppJava {
         try {
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             JavaNetSync javaSync = new JavaNetSync(sha);
-            LocalStorage localStorage = new LocalStorage(new Configuration(new File("./gameConfig.json"), "gameA"), javaSync);
+            LocalStorage localStorage = new LocalStorage(new Configuration("./gameConfig.json", "gameA"), javaSync);
             localStorage.writeMetaFilesToDisk();
-            JoltStorage joltStorage = new JoltStorage(new Configuration(new File("./gameConfig.json"), "gameB"), javaSync);
+            JoltStorage joltStorage = new JoltStorage(new Configuration("./gameConfig.json", "gameB"), javaSync);
             joltStorage.writeMetaFilesToDisk();
             joltStorage.writeFilesToDisk();
         } catch (NoSuchAlgorithmException e) {

@@ -1,8 +1,8 @@
-package joltconnlib;
+package joltconnlib.metaObject;
 
 public class JoltEntry {
-    String sha;
-    String key;
+    public String sha;
+    public String key;
 
     public JoltEntry(String sha, String key) {
         this.sha = sha;

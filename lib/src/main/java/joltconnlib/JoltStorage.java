@@ -31,6 +31,8 @@ import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreRemoveRequest;
 
 import joltconnlib.backend.IJson;
 import joltconnlib.backend.ISync;
+import joltconnlib.metaObject.JoltEntry;
+import joltconnlib.metaObject.MetaDataObject;
 
 public class JoltStorage {
     
@@ -88,19 +90,12 @@ public class JoltStorage {
     // }
 
     private MetaDataObject buildMetaObject() {
-        MetaDataObject metaObject = new MetaDataObject();
-
+        final MetaDataObject metaObject = new MetaDataObject();
+        
         // get all keys
         List<String> keys = getWebKeys();
 
-        List<String> l = sync.getAllEntries(configuration.getID(), configuration.getKey());
-        String tmp = sync.getEntry("AAA", configuration.getID(), configuration.getKey());
-        if (l != null && l.size() > 0){
-        String tmp2 = sync.getEntry(l.get(0), configuration.getID(), configuration.getKey());
-        System.out.println(tmp2);
-        }
-        System.out.println(l);
-        System.out.println(tmp);
+
 
 
         // try downloading metadata

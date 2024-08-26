@@ -26,7 +26,6 @@ import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreGetKeysRequest;
 import com.github.raeleus.gamejoltapi.GameJoltRequest;
 
 
-
 import joltconnlib.backend.ISync;
 
 public class JavaNetSync implements ISync{
@@ -65,6 +64,10 @@ public class JavaNetSync implements ISync{
 
         return keyData;
     
+    }
+    
+    public MessageDigest getSha() {
+        return urlSha;
     }
     
     public List<String> getAllEntries(String GameID, String GameKey) {

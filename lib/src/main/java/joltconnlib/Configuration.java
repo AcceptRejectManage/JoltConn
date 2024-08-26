@@ -21,12 +21,12 @@ public class Configuration {
         return gameID;
     }
 
-    public File getPath() {
-        return path;
+    public String getPath() {
+        return path.toString();
     }
 
-    public File getConfigPath() {
-        return configPath;
+    public String getConfigPath() {
+        return configPath.toString();
     }
 
     @Override
@@ -34,6 +34,11 @@ public class Configuration {
         return new StringBuilder().append("gameID: ").append(gameID).append(" gameKey: ").append(gameKey)
             .append(" workdir: ").append(path.getAbsolutePath()).append(" configuration folder: ").append(configPath).toString();
     }
+    
+    public Configuration(String configFilePath, String gameName) {
+        this(new File(configFilePath), gameName);
+    }
+
     public Configuration(File configFilePath, String gameName) {
         boolean error = false;
         File configPath = null;

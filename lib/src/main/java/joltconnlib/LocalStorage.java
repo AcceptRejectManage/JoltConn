@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
 import joltconnlib.backend.IJson;
 import joltconnlib.backend.ISync;
+import joltconnlib.metaObject.JoltEntry;
+import joltconnlib.metaObject.MetaDataObject;
 
 public class LocalStorage {
     
@@ -48,7 +50,7 @@ public class LocalStorage {
     }
 
     private MetaDataObject buildMetaObject() {
-        final File workdir = configuration.getPath();
+        final File workdir = new File(configuration.getPath());
         String[] filters = new String[0];
         MetaDataObject metaObject = new MetaDataObject();
 

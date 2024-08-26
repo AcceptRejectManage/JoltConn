@@ -3,4 +3,8 @@ allprojects {
         mavenCentral()
 	    maven { url 'https://jitpack.io' }
     }
+
+    version = "0.0.1"
+	group = 'com.github.AcceptRejectManage.JoltConn'
 }
+

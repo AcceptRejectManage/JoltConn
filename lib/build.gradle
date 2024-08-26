@@ -8,7 +8,22 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'java-library'
+    id 'maven-publish'
 }
+
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+        }
+    }
+}
+
 
 dependencies {
     // Use JUnit Jupiter for testing.

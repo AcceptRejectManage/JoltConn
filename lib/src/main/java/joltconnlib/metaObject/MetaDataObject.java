@@ -23,6 +23,10 @@ public class MetaDataObject {
         fresh = true;
     }
 
+    public void clearEntries() {
+        sortedFiles.clear();
+    }
+
     public void addEntry(JoltEntry entry) {
         sortedFiles.add(entry);
     }
@@ -36,6 +40,10 @@ public class MetaDataObject {
         return sortedFiles.toArray(new JoltEntry[sortedFiles.size()]);
     }
     
+    public void clearFilters() {
+        sortedFilter.clear();
+    }
+
     public void addFilter(String path) {
         sortedFilter.add(path);
     }

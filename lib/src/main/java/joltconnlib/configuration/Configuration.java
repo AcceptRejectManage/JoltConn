@@ -1,4 +1,4 @@
-package joltconnlib;
+package joltconnlib.configuration;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class Configuration {
-    private final File configPath;
+    private final File workdir;
     private final File path;
     private final String gameKey;
     private final String gameID;
@@ -25,14 +25,14 @@ public class Configuration {
         return path.toString();
     }
 
-    public String getConfigPath() {
-        return configPath.toString();
+    public String getWorkdir() {
+        return workdir.toString();
     }
 
     @Override
     public String toString() {
         return new StringBuilder().append("gameID: ").append(gameID).append(" gameKey: ").append(gameKey)
-            .append(" workdir: ").append(path.getAbsolutePath()).append(" configuration folder: ").append(configPath).toString();
+            .append(" workdir: ").append(path.getAbsolutePath()).append(" configuration folder: ").append(workdir).toString();
     }
     
     public Configuration(String configFilePath, String gameName) {
@@ -90,7 +90,7 @@ public class Configuration {
                 gameID = "";
             } 
         }
-        this.configPath = configPath;
+        this.workdir = configPath;
         this.path = path;
         this.gameKey = gameKey;
         this.gameID = gameID;

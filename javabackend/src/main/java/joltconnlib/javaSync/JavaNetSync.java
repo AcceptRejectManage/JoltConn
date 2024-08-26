@@ -16,17 +16,22 @@ import java.util.List;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
 import jakarta.json.JsonStructure;
 
 import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreFetchRequest;
 import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreGetKeysRequest;
+import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreSetRequest;
 import com.github.raeleus.gamejoltapi.GameJoltRequest;
 
-
+import joltconnlib.backend.Containers.JoltArrayOfStringsContainer;
+import joltconnlib.backend.Containers.JoltStringContainer;
 import joltconnlib.backend.ISync;
+import joltconnlib.configuration.Configuration;
+import joltconnlib.metaObject.JoltEntry;
+import joltconnlib.metaObject.MetaDataObject;
 
 public class JavaNetSync implements ISync{
     
@@ -39,30 +44,26 @@ public class JavaNetSync implements ISync{
         this.urlSha = urlSha;
     }
 
-    public String getEntry(String key, String GameID, String GameKey) {
+    public void getEntry(String key, Configuration configuration, JoltStringContainer result) {
 
-        String keyData = null;
-        String url = GetRawUrl(DataStoreFetchRequest.builder().gameID(GameID).key(key).build());
-        String keyJson = performRequest(url, GameKey );
+        String url = GetRawUrl(DataStoreFetchRequest.builder().gameID(configuration.getID()).key(key).build());
+        String keyJson = performRequest(url, configuration.getKey());
 
         JsonReader reader = Json.createReader(new StringReader(keyJson));
             
         JsonStructure js = reader.read();
         JsonObject response = js.asJsonObject().getJsonObject("response");
-        JsonString result = response.getJsonString("success");
+        JsonString responseStr = response.getJsonString("success");
 
-        if (!result.getString().equals("true")){
-            return null;
+        if (!responseStr.getString().equals("true")){
+            return ;
         }
 
         if (!response.containsKey("data")) {
-            return null;
+            return ;
         }
 
-        keyData = response.getString("data");
-
-
-        return keyData;
+        result.value =  response.getString("data");
     
     }
     
@@ -70,24 +71,27 @@ public class JavaNetSync implements ISync{
         return urlSha;
     }
     
-    public List<String> getAllEntries(String GameID, String GameKey) {
-        List<String> webKeys = new ArrayList<String>();
+    public void getAllEntries(Configuration configuration, JoltArrayOfStringsContainer result) {
 
-        String rawUrl = GetRawUrl(DataStoreGetKeysRequest.builder().gameID(GameID).build());
+        String rawUrl = GetRawUrl(DataStoreGetKeysRequest.builder().gameID(configuration.getID()).build());
         if (rawUrl.length() > 0) {
-            String keysRequestAsJsonStr = performRequest(rawUrl, GameKey);
+            String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
             JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
             
             JsonStructure js = reader.read();
             JsonObject response = js.asJsonObject().getJsonObject("response");
-            JsonString result = response.getJsonString("success");
+            JsonString success = response.getJsonString("success");
+            // TODO check if response was success
             JsonArray keys = response.getJsonArray("keys");
             List<JsonObject> keysView = keys.getValuesAs(JsonObject.class);
-            for (JsonObject k: keysView) {
-                webKeys.add(k.getString("key"));
+            
+            if (keysView.size() > 0) {
+                result.value = new ArrayList<String>();
+                for (JsonObject k: keysView) {
+                    result.value.add(k.getString("key"));
+                }
             }
         }
-        return webKeys;
     }
 
     private String GetRawUrl(GameJoltRequest r) {
@@ -113,4 +117,31 @@ public class JavaNetSync implements ISync{
         return "";
     }
 
+    public void writeFile(Configuration configuration, String path, String data) {
+        String rawUrl = GetRawUrl(DataStoreSetRequest.builder().gameID(configuration.getID()).key(path).data(data).build());
+        if (rawUrl.length() > 0) {
+            String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
+            JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
+            
+            JsonStructure js = reader.read();
+            JsonObject response = js.asJsonObject().getJsonObject("response");
+            JsonString success = response.getJsonString("success");
+            // TODO check if response was success
+        }
+    }
+
+    public void writeMetaFiles(Configuration configuration, MetaDataObject metaDataObject) {
+        writeFile(configuration, MetaDataObject.FILTER_FILE, String.join("\n", metaDataObject.getFilters()));
+        writeFile(configuration, MetaDataObject.METAHASH_FILE, String.join("\n", metaDataObject.getMetaHash()));
+        writeFile(configuration, MetaDataObject.METADATA_FILE, jsonifyEntries(metaDataObject.getEntries()));
+    }
+
+    private String jsonifyEntries(JoltEntry[] files) {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        for (JoltEntry entry: files) {
+            builder.add(entry.key, entry.sha);
+        }
+        JsonObject jo = builder.build();
+        return jo.toString();
+    }
 }

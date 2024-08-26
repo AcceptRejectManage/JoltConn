@@ -12,7 +12,5 @@ plugins {
 
 rootProject.name = 'JoltConn'
 include('lib')
-include('gdxbackend')
 include('javabackend')
-include('appGdx')
 include('appJava')

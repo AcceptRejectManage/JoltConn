@@ -3,11 +3,23 @@ package joltconnlib.backend;
 import java.util.List;
 
 public class Containers {
-    public class JoltStringContainer {
+    public static class JoltStringContainer {
         public String value;
+        public boolean isValid(){
+            return value != null;
+        }
+        public void clear() {
+            value = null;
+        }
     }
 
-    public class JoltArrayOfStringsContainer {
+    public static class JoltArrayOfStringsContainer {
         public List<String> value;
+        public boolean isValid(){
+            return value != null;
+        }
+        public void clear() {
+            value = null;
+        }
     }
 }

@@ -3,13 +3,12 @@
  */
 package joltconnapp;
 
-import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import joltconnlib.LocalStorage;
-import joltconnlib.Configuration;
-import joltconnlib.JoltStorage;
+import joltconnlib.Storage;
+import joltconnlib.configuration.Configuration;
+import joltconnlib.javaSync.JavaLocalSync;
 import joltconnlib.javaSync.JavaNetSync;
 
 public class AppJava {
@@ -18,11 +17,9 @@ public class AppJava {
         try {
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             JavaNetSync javaSync = new JavaNetSync(sha);
-            LocalStorage localStorage = new LocalStorage(new Configuration("./gameConfig.json", "gameA"), javaSync);
-            localStorage.writeMetaFilesToDisk();
-            JoltStorage joltStorage = new JoltStorage(new Configuration("./gameConfig.json", "gameB"), javaSync);
-            joltStorage.writeMetaFilesToDisk();
-            joltStorage.writeFilesToDisk();
+            JavaLocalSync localSync = new JavaLocalSync(sha);
+            Storage storage = new Storage(new Configuration("./gameConfig.json", "gameB"), javaSync, localSync);
+            storage.storeFilesLocally();
         } catch (NoSuchAlgorithmException e) {
             System.out.print("No sha-1 on this machine");
         }

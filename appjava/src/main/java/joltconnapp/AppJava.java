@@ -18,7 +18,7 @@ public class AppJava {
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             JavaNetSync javaSync = new JavaNetSync(sha);
             JavaLocalSync localSync = new JavaLocalSync(sha);
-            Storage storage = new Storage(new Configuration("./gameConfig.json", "gameB"), javaSync, localSync);
+            Storage storage = new Storage(new Configuration("../app/gameConfig.json", "gameA"), javaSync, localSync);
             storage.storeFilesLocally();
         } catch (NoSuchAlgorithmException e) {
             System.out.print("No sha-1 on this machine");

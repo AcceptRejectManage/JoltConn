@@ -12,6 +12,12 @@ subprojects {
     apply plugin: 'java'
 	apply plugin: 'maven-publish'
 
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+	
 	publishing {
 		publications {
 			maven(MavenPublication) {

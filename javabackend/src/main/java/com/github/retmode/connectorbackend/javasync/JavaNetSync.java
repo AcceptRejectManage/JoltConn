@@ -1,4 +1,4 @@
-package joltconnlib.javaSync;
+package com.github.retmode.connectorbackend.javasync;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -26,14 +26,14 @@ import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreGetKeysRequest;
 import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreSetRequest;
 import com.github.raeleus.gamejoltapi.GameJoltRequest;
 
-import joltconnlib.backend.Containers.JoltArrayOfStringsContainer;
-import joltconnlib.backend.Containers.JoltStringContainer;
-import joltconnlib.backend.ISync;
-import joltconnlib.configuration.Configuration;
-import joltconnlib.metaObject.JoltEntry;
-import joltconnlib.metaObject.MetaDataObject;
+import com.github.retmode.connectorbase.backend.Containers.JoltArrayOfStringsContainer;
+import com.github.retmode.connectorbase.backend.Containers.JoltStringContainer;
+import com.github.retmode.connectorbase.backend.ISync;
+import com.github.retmode.connectorbase.backend.IConfiguration;
+import com.github.retmode.connectorbase.metaobject.JoltEntry;
+import com.github.retmode.connectorbase.metaobject.MetaDataObject;
 
-public class JavaNetSync implements ISync{
+public class JavaNetSync implements ISync {
     
     private static final String GameJoltSite = "https://api.gamejolt.com/api/game/";
     private static final String GameJoltVersion = "v1_2";
@@ -44,7 +44,7 @@ public class JavaNetSync implements ISync{
         this.urlSha = urlSha;
     }
 
-    public void getEntry(String key, Configuration configuration, JoltStringContainer result) {
+    public void getEntry(String key, IConfiguration configuration, JoltStringContainer result) {
 
         String url = GetRawUrl(DataStoreFetchRequest.builder().gameID(configuration.getID()).key(key).build());
         String keyJson = performRequest(url, configuration.getKey());
@@ -71,7 +71,7 @@ public class JavaNetSync implements ISync{
         return urlSha;
     }
     
-    public void getAllEntries(Configuration configuration, JoltArrayOfStringsContainer result) {
+    public void getAllEntries(IConfiguration configuration, JoltArrayOfStringsContainer result) {
 
         String rawUrl = GetRawUrl(DataStoreGetKeysRequest.builder().gameID(configuration.getID()).build());
         if (rawUrl.length() > 0) {
@@ -117,7 +117,7 @@ public class JavaNetSync implements ISync{
         return "";
     }
 
-    public void writeFile(Configuration configuration, String path, String data) {
+    public void writeFile(IConfiguration configuration, String path, String data) {
         String rawUrl = GetRawUrl(DataStoreSetRequest.builder().gameID(configuration.getID()).key(path).data(data).build());
         if (rawUrl.length() > 0) {
             String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
@@ -130,7 +130,7 @@ public class JavaNetSync implements ISync{
         }
     }
 
-    public void writeMetaFiles(Configuration configuration, MetaDataObject metaDataObject) {
+    public void writeMetaFiles(IConfiguration configuration, MetaDataObject metaDataObject) {
         writeFile(configuration, MetaDataObject.FILTER_FILE, String.join("\n", metaDataObject.getFilters()));
         writeFile(configuration, MetaDataObject.METAHASH_FILE, String.join("\n", metaDataObject.getMetaHash()));
         writeFile(configuration, MetaDataObject.METADATA_FILE, jsonifyEntries(metaDataObject.getEntries()));

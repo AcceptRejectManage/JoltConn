@@ -1,4 +1,4 @@
-package joltconnlib;
+package com.github.retmode.connectorbase;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -7,22 +7,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HexFormat;
 
-import joltconnlib.backend.Containers;
-import joltconnlib.backend.ISync;
-import joltconnlib.backend.Containers.JoltArrayOfStringsContainer;
-import joltconnlib.backend.Containers.JoltStringContainer;
-import joltconnlib.configuration.Configuration;
-import joltconnlib.metaObject.JoltEntry;
-import joltconnlib.metaObject.MetaDataObject;
+import com.github.retmode.connectorbase.backend.Containers;
+import com.github.retmode.connectorbase.backend.ISync;
+import com.github.retmode.connectorbase.backend.Containers.JoltArrayOfStringsContainer;
+import com.github.retmode.connectorbase.backend.Containers.JoltStringContainer;
+import com.github.retmode.connectorbase.backend.IConfiguration;
+import com.github.retmode.connectorbase.metaobject.JoltEntry;
+import com.github.retmode.connectorbase.metaobject.MetaDataObject;
 
 public class Storage {
     
     private final ISync netSync;
     private final ISync localSync;
-    private final Configuration configuration;
+    private final IConfiguration configuration;
     private final MetaDataObject metaDataObject;
 
-    public Storage(Configuration configuration, ISync netSync, ISync localSync) {
+    public Storage(IConfiguration configuration, ISync netSync, ISync localSync) {
 
         this.configuration = configuration;
         this.netSync = netSync;

@@ -1,4 +1,4 @@
-package joltconnlib.javaSync;
+package com.github.retmode.connectorbackend.javasync;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -14,14 +14,14 @@ import java.util.Comparator;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
-import joltconnlib.backend.Containers.JoltArrayOfStringsContainer;
-import joltconnlib.backend.Containers.JoltStringContainer;
-import joltconnlib.backend.ISync;
-import joltconnlib.configuration.Configuration;
-import joltconnlib.metaObject.JoltEntry;
-import joltconnlib.metaObject.MetaDataObject;
+import com.github.retmode.connectorbase.backend.ISync;
+import com.github.retmode.connectorbase.backend.Containers.JoltArrayOfStringsContainer;
+import com.github.retmode.connectorbase.backend.Containers.JoltStringContainer;
+import com.github.retmode.connectorbase.backend.IConfiguration;
+import com.github.retmode.connectorbase.metaobject.JoltEntry;
+import com.github.retmode.connectorbase.metaobject.MetaDataObject;
 
-public class JavaLocalSync implements ISync{
+public class JavaLocalSync implements ISync {
 
     private class Filter implements FilenameFilter {
         // private final String[] filters;
@@ -44,14 +44,14 @@ public class JavaLocalSync implements ISync{
         this.urlSha = urlSha;
     }
 
-    public void getEntry(String key, Configuration configuration, JoltStringContainer result) {
+    public void getEntry(String key, IConfiguration configuration, JoltStringContainer result) {
 
         File workdir = new File(configuration.getPath());
         if (!workdir.isDirectory()) {
             return;
         }
         File file = new File(workdir, key);
-        if (!file.isFile()) { 
+        if (file.isFile()) { 
             try {
                 result.value = Files.readString(file.toPath());
             } catch (IOException e) {
@@ -64,7 +64,7 @@ public class JavaLocalSync implements ISync{
         return urlSha;
     }
     
-    public void getAllEntries(Configuration configuration, JoltArrayOfStringsContainer result) {
+    public void getAllEntries(IConfiguration configuration, JoltArrayOfStringsContainer result) {
 
         File workdir = new File(configuration.getPath());
         if (!workdir.isDirectory()) {
@@ -86,16 +86,16 @@ public class JavaLocalSync implements ISync{
         }
     }
 
-    public void writeFile(Configuration configuration, String path, String data) {
+    public void writeFile(IConfiguration configuration, String path, String data) {
         Path filePath = new File(configuration.getPath(), path).toPath();
         try {
-        Files.writeString(filePath, data, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(filePath, data, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             System.out.println("Filter file was not written");
         }
     }
 
-    public void writeMetaFiles(Configuration configuration, MetaDataObject metaDataObject) {
+    public void writeMetaFiles(IConfiguration configuration, MetaDataObject metaDataObject) {
         writeFile(configuration, MetaDataObject.FILTER_FILE, String.join("\n", metaDataObject.getFilters()));
         writeFile(configuration, MetaDataObject.METAHASH_FILE, String.join("\n", metaDataObject.getMetaHash()));
         writeFile(configuration, MetaDataObject.METADATA_FILE, jsonifyEntries(metaDataObject.getEntries()));

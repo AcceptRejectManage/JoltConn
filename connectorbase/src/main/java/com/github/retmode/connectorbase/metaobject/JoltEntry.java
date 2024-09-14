@@ -1,4 +1,4 @@
-package joltconnlib.metaObject;
+package com.github.retmode.connectorbase.metaobject;
 
 public class JoltEntry {
     public String sha;

@@ -1,4 +1,4 @@
-package joltconnlib.metaObject;
+package com.github.retmode.connectorbase.metaobject;
 
 import java.util.ArrayList;
 import java.util.Arrays;

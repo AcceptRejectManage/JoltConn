@@ -1,13 +1,15 @@
-package joltconnlib.configuration;
+package com.github.retmode.connectorbackend.javasync;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.github.retmode.connectorbase.backend.IConfiguration;
+
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
-public class Configuration {
+public class JavaConfiguration implements IConfiguration {
     private final File workdir;
     private final File path;
     private final String gameKey;
@@ -35,11 +37,11 @@ public class Configuration {
             .append(" workdir: ").append(path.getAbsolutePath()).append(" configuration folder: ").append(workdir).toString();
     }
     
-    public Configuration(String configFilePath, String gameName) {
+    public JavaConfiguration(String configFilePath, String gameName) {
         this(new File(configFilePath), gameName);
     }
 
-    public Configuration(File configFilePath, String gameName) {
+    public JavaConfiguration(File configFilePath, String gameName) {
         boolean error = false;
         File configPath = null;
         File path = null;

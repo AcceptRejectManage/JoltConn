@@ -1,4 +1,4 @@
-package joltconnlib.backend;
+package com.github.retmode.connectorbase.backend;
 
 import java.util.List;
 

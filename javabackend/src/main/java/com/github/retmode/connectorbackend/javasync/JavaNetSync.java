@@ -21,11 +21,6 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
 
-import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreFetchRequest;
-import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreGetKeysRequest;
-import com.github.raeleus.gamejoltapi.GameJoltDataStore.DataStoreSetRequest;
-import com.github.raeleus.gamejoltapi.GameJoltRequest;
-
 import com.github.retmode.connectorbase.backend.Containers.JoltArrayOfStringsContainer;
 import com.github.retmode.connectorbase.backend.Containers.JoltStringContainer;
 import com.github.retmode.connectorbase.backend.ISync;
@@ -47,26 +42,30 @@ public class JavaNetSync implements ISync {
 
     public void getEntry(String key, IConfiguration configuration, JoltStringContainer result) {
 
-        String url = GetRawEntryUrl(configuration.getID(), key);
-        
-        String keyJson = performRequest(url, configuration.getKey());
-
+        String rawUrl = GetRawEntryUrl(configuration.getID(), key);
+        String keyJson = performRequest(rawUrl, configuration.getKey());
+        if (keyJson == null || keyJson.length() == 0) {
+            System.out.println("Request was not performed.");
+            return;
+        }
         JsonReader reader = Json.createReader(new StringReader(keyJson));
-            
-        JsonStructure js = reader.read();
-        JsonObject response = js.asJsonObject().getJsonObject("response");
-        JsonString responseStr = response.getJsonString("success");
-
-        if (!responseStr.getString().equals("true")){
-            return ;
+        try {
+            JsonStructure js = reader.read();
+            JsonObject response = js.asJsonObject().getJsonObject("response");
+            if (response == null) {
+                System.out.println("Response was not a valid JSON object.");
+                return;
+            }
+            JsonString success = response.getJsonString("success");
+            if (success == null || !success.getString().equals("true") || !response.containsKey("data")){
+                System.out.println("Response was not a valid JSON object.");
+                return ;
+            }
+            result.value = response.getString("data");
+        } catch (RuntimeException e) {
+            System.out.println("Obtaining entry failed:");
+            System.out.println(e.getStackTrace().toString());
         }
-
-        if (!response.containsKey("data")) {
-            return ;
-        }
-
-        result.value =  response.getString("data");
-    
     }
     
     public MessageDigest getSha() {
@@ -76,25 +75,42 @@ public class JavaNetSync implements ISync {
     public void getAllEntries(IConfiguration configuration, JoltArrayOfStringsContainer result) {
 
         String rawUrl = GetRawEntriesUrl(configuration.getID());
-
-        if (rawUrl.length() > 0) {
-            String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
-            JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
-            
+        String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
+        if (keysRequestAsJsonStr == null || keysRequestAsJsonStr.length() == 0) {
+            System.out.println("Request was not performed.");
+            return;
+        }
+        JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
+        try {
             JsonStructure js = reader.read();
             JsonObject response = js.asJsonObject().getJsonObject("response");
+            if (response == null) {
+                System.out.println("Response was not a valid JSON object.");
+                return;
+            }
             JsonString success = response.getJsonString("success");
-            // TODO check if response was success
+            if (success == null || !success.getString().equals("true")) {
+                System.out.println("Operation was not successful.");
+                return;
+            }
             JsonArray keys = response.getJsonArray("keys");
+            if (keys == null ) {
+                System.out.println("Response do not contain any keys.");
+                return;
+            }
             List<JsonObject> keysView = keys.getValuesAs(JsonObject.class);
-            
             if (keysView.size() > 0) {
                 result.value = new ArrayList<String>();
                 for (JsonObject k: keysView) {
                     result.value.add(k.getString("key"));
                 }
             }
+        } catch (RuntimeException e) {
+            System.out.println("Retrieving all entries failed:");
+            System.out.println(e.getStackTrace().toString());
         }
+
+        
     }
 
     private String GetRawEntryUrl(String gameID, String gameKey) {
@@ -134,29 +150,54 @@ public class JavaNetSync implements ISync {
 
     public void writeEntry(IConfiguration configuration, String key, String data){
         String rawUrl = SetRawDataUrl(configuration.getID(), key, data);
-
-        if (rawUrl.length() > 0) {
-            String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
-            JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
-            
+        String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
+        if (keysRequestAsJsonStr == null || keysRequestAsJsonStr.length() == 0) {
+            System.out.println("Request was not performed.");
+            return;
+        }
+        JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
+        try {
             JsonStructure js = reader.read();
             JsonObject response = js.asJsonObject().getJsonObject("response");
+            if (response == null) {
+                System.out.println("Response was not a valid JSON object.");
+                return;
+            }
             JsonString success = response.getJsonString("success");
-            // TODO check if response was success
+            if (success == null || !success.getString().equals("true")) {
+                System.out.println("Operation was not successful.");
+                return;
+            }
+        } catch (RuntimeException e) {
+            System.out.println("Writing entry failed:");
+            System.out.println(e.getStackTrace().toString());
         }
+        
     }
 
     public void removeEntry(IConfiguration configuration, String key) {
         String rawUrl = RemoveRawDataUrl(configuration.getID(), key);
-
-        if (rawUrl.length() > 0) {
-            String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
-            JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
-            
+        String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
+        if (keysRequestAsJsonStr == null || keysRequestAsJsonStr.length() == 0) {
+            System.out.println("Request was not performed.");
+            return;
+        }
+        JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
+        try {
             JsonStructure js = reader.read();
             JsonObject response = js.asJsonObject().getJsonObject("response");
+            if (response == null) {
+                System.out.println("Response was not a valid JSON object.");
+                return;
+            }
             JsonString success = response.getJsonString("success");
-            // TODO check if response was success
+            if (success == null || !success.getString().equals("true")) {
+                System.out.println("Operation was not successful.");
+                return;
+            }
+        } catch (RuntimeException e) {
+            System.out.println("Removing entry failed:");
+            System.out.println(e.getStackTrace().toString());
         }
     }
 

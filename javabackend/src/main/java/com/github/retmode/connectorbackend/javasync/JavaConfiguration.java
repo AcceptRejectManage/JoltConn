@@ -8,12 +8,8 @@ import java.nio.file.Path;
 import com.github.retmode.connectorbase.backend.IConfiguration;
 
 import jakarta.json.Json;
-import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
-import jakarta.json.JsonString;
-import jakarta.json.JsonStructure;
 
 public class JavaConfiguration implements IConfiguration {
     private final File workdir;

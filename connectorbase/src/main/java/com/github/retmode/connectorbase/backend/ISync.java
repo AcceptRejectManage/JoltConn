@@ -4,7 +4,6 @@ import java.security.MessageDigest;
 
 import com.github.retmode.connectorbase.backend.Containers.JoltArrayOfStringsContainer;
 import com.github.retmode.connectorbase.backend.Containers.JoltStringContainer;
-import com.github.retmode.connectorbase.backend.IConfiguration;
 import com.github.retmode.connectorbase.metaobject.MetaDataObject;
 
 public interface ISync {

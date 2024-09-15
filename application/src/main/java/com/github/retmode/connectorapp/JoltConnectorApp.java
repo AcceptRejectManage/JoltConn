@@ -1,4 +1,5 @@
 package com.github.retmode.connectorapp;
+
 // package com.github.retmode.connectorapp;
 
 // import java.security.MessageDigest;
@@ -34,8 +35,8 @@ package com.github.retmode.connectorapp;
 import java.io.File;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
@@ -44,30 +45,38 @@ import javafx.stage.Stage;
 
 public class JoltConnectorApp extends Application {
 
-    private GridPane gridPane;
+    public static void main(String[] args) {
+        launch();
+    }
 
     @Override
     public void start(Stage stage) {
-        String javaVersion = System.getProperty("java.version");
-        String javafxVersion = System.getProperty("javafx.version");
-        GridPane gridPane = new GridPane();
-
-        TextField textField = new TextField();
-        Scene scene = new Scene(gridPane, 640, 480);
-        gridPane.add(textField,0,0);
-        
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File("."));
         fileChooser.setTitle("Open Resource File");
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Config Files", "*.json"));
         System.out.println(fileChooser.showOpenDialog(stage));
 
+        // String javaVersion = System.getProperty("java.version");
+        // String javafxVersion = System.getProperty("javafx.version");
+
+        TextField textField = new TextField();
+        textField.setText("SD");
+
+        GridPane gridPane = new GridPane();
+        gridPane.setPadding(new Insets(10));
+        gridPane.add(textField,0,0);
+        
+        Scene scene = new Scene(gridPane, 640, 480);
         stage.setScene(scene);
+        stage.centerOnScreen();
+        stage.setTitle("Jolt Connector");
         stage.show();
     }
 
-    public static void main(String[] args) {
-        launch();
-    }
+    @Override
+    public void init() {}
 
+    @Override
+    public void stop() {}
 }

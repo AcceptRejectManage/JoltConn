@@ -5,8 +5,7 @@ plugins {
 }
 
 dependencies {
-    // Use JUnit Jupiter for testing.
-    implementation 'com.github.raeleus:game-jolt-api:0.0.5'
+    
 }
 
 

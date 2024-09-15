@@ -37,6 +37,7 @@ public class JavaNetSync implements ISync {
     
     private static final String GameJoltSite = "https://api.gamejolt.com/api/game/";
     private static final String GameJoltVersion = "v1_2";
+    private static final String GameJoltQuery = "/data-store/";
 
     private final MessageDigest urlSha;
 
@@ -46,7 +47,8 @@ public class JavaNetSync implements ISync {
 
     public void getEntry(String key, IConfiguration configuration, JoltStringContainer result) {
 
-        String url = GetRawUrl(DataStoreFetchRequest.builder().gameID(configuration.getID()).key(key).build());
+        String url = GetRawEntryUrl(configuration.getID(), key);
+        
         String keyJson = performRequest(url, configuration.getKey());
 
         JsonReader reader = Json.createReader(new StringReader(keyJson));
@@ -73,7 +75,8 @@ public class JavaNetSync implements ISync {
     
     public void getAllEntries(IConfiguration configuration, JoltArrayOfStringsContainer result) {
 
-        String rawUrl = GetRawUrl(DataStoreGetKeysRequest.builder().gameID(configuration.getID()).build());
+        String rawUrl = GetRawEntriesUrl(configuration.getID());
+
         if (rawUrl.length() > 0) {
             String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
             JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
@@ -94,10 +97,22 @@ public class JavaNetSync implements ISync {
         }
     }
 
-    private String GetRawUrl(GameJoltRequest r) {
-        return GameJoltSite + GameJoltVersion + r.toString();
+    private String GetRawEntryUrl(String gameID, String gameKey) {
+        return GameJoltSite + GameJoltVersion + GameJoltQuery + "?game_id=" + gameID + "&key=" + gameKey;
+    }
+
+    private String GetRawEntriesUrl(String gameID) {
+        return GameJoltSite + GameJoltVersion + GameJoltQuery + "get-keys/?game_id=" + gameID;
+    }
+
+    private String SetRawDataUrl(String gameID, String gameKey, String data) {
+        return GameJoltSite + GameJoltVersion + GameJoltQuery + "set/?game_id=" + gameID + "&key=" + gameKey + "&data=" + data;
     }
     
+    private String RemoveRawDataUrl(String gameID, String gameKey) {
+        return GameJoltSite + GameJoltVersion + GameJoltQuery + "remove/?game_id=" + gameID + "&key=" + gameKey;
+    }
+
     private String performRequest(String path, String GameKey) {
         
         try{    
@@ -117,8 +132,23 @@ public class JavaNetSync implements ISync {
         return "";
     }
 
-    public void writeFile(IConfiguration configuration, String path, String data) {
-        String rawUrl = GetRawUrl(DataStoreSetRequest.builder().gameID(configuration.getID()).key(path).data(data).build());
+    public void writeEntry(IConfiguration configuration, String key, String data){
+        String rawUrl = SetRawDataUrl(configuration.getID(), key, data);
+
+        if (rawUrl.length() > 0) {
+            String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
+            JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
+            
+            JsonStructure js = reader.read();
+            JsonObject response = js.asJsonObject().getJsonObject("response");
+            JsonString success = response.getJsonString("success");
+            // TODO check if response was success
+        }
+    }
+
+    public void removeEntry(IConfiguration configuration, String key) {
+        String rawUrl = RemoveRawDataUrl(configuration.getID(), key);
+
         if (rawUrl.length() > 0) {
             String keysRequestAsJsonStr = performRequest(rawUrl, configuration.getKey());
             JsonReader reader = Json.createReader(new StringReader(keysRequestAsJsonStr));
@@ -131,9 +161,9 @@ public class JavaNetSync implements ISync {
     }
 
     public void writeMetaFiles(IConfiguration configuration, MetaDataObject metaDataObject) {
-        writeFile(configuration, MetaDataObject.FILTER_FILE, String.join("\n", metaDataObject.getFilters()));
-        writeFile(configuration, MetaDataObject.METAHASH_FILE, String.join("\n", metaDataObject.getMetaHash()));
-        writeFile(configuration, MetaDataObject.METADATA_FILE, jsonifyEntries(metaDataObject.getEntries()));
+        writeEntry(configuration, MetaDataObject.FILTER_FILE, String.join("\n", metaDataObject.getFilters()));
+        writeEntry(configuration, MetaDataObject.METAHASH_FILE, String.join("\n", metaDataObject.getMetaHash()));
+        writeEntry(configuration, MetaDataObject.METADATA_FILE, jsonifyEntries(metaDataObject.getEntries()));
     }
 
     private String jsonifyEntries(JoltEntry[] files) {

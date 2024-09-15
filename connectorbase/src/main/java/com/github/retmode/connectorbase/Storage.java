@@ -22,6 +22,18 @@ public class Storage {
     private final IConfiguration configuration;
     private final MetaDataObject metaDataObject;
 
+    public enum Target {NET, LOCAL};
+
+    private ISync getSync(Target target) {
+        switch(target) {
+            case NET:
+            return netSync;
+            case LOCAL:
+            return localSync;
+            default:
+            return null; //?
+        }
+    }
     public Storage(IConfiguration configuration, ISync netSync, ISync localSync) {
 
         this.configuration = configuration;
@@ -31,16 +43,16 @@ public class Storage {
 
     }
     public void updateNetMetaHash() {
-        updateMetaHash(netSync);
+        updateMetaHash(Target.NET);
     }
 
     public void updateLocalMetaHash() {
-        updateMetaHash(localSync);
+        updateMetaHash(Target.LOCAL);
     }
     
 
-    public void updateMetaHash(ISync sync) {
-
+    public void updateMetaHash(Target target) {
+        ISync sync = getSync(target);
         Containers.JoltStringContainer jsc = new Containers.JoltStringContainer();
         sync.getEntry(MetaDataObject.METAHASH_FILE, 
             configuration, jsc);
@@ -53,15 +65,16 @@ public class Storage {
     }
 
     public void updateNetFilter() {
-        updateFilter(netSync);
+        updateFilter(Target.NET);
     }
 
     public void updateLocalFilter() {
-        updateFilter(localSync);
+        updateFilter(Target.LOCAL);
     }
 
 
-    public void updateFilter(ISync sync) {
+    public void updateFilter(Target target) {
+        ISync sync = getSync(target);
         Containers.JoltStringContainer jsc = new Containers.JoltStringContainer();
         sync.getEntry(MetaDataObject.FILTER_FILE, 
             configuration,
@@ -76,14 +89,15 @@ public class Storage {
     }
 
     public void updateNetHashes() {
-        updateHashes(netSync);
+        updateHashes(Target.NET);
     }
 
     public void updateLocalHashes() {
-        updateHashes(localSync);
+        updateHashes(Target.LOCAL);
     }
 
-    public void updateHashes(ISync sync) {
+    public void updateHashes(Target target) {
+        ISync sync = getSync(target);
         String metaHash = null;
         ArrayList<JoltEntry> entries = new ArrayList<>();
         Containers.JoltArrayOfStringsContainer jasc = new Containers.JoltArrayOfStringsContainer();
@@ -120,14 +134,20 @@ public class Storage {
     }
 
     public void storeFilesLocally() {
-        storeFiles(netSync, localSync);
+        storeFiles(Target.NET, Target.LOCAL);
     }
 
     public void storeFilesNet() {
-        storeFiles(localSync, netSync);
+        storeFiles(Target.LOCAL, Target.NET);
     }
 
-    public void storeFiles(ISync from, ISync to) {
+    public void storeFiles(Target targetFrom, Target targetTo) {
+        ISync from = getSync(targetFrom);
+        ISync to = getSync(targetTo);
+        if (from == null || to == null) {
+            System.out.println("Unknown target");
+            return;
+        }
         JoltArrayOfStringsContainer jaos = new JoltArrayOfStringsContainer();
         from.getAllEntries(configuration, jaos);
         if (jaos.isValid()) {
@@ -136,8 +156,33 @@ public class Storage {
                 jsc.clear();
                 from.getEntry(entry, configuration, jsc);
                 if (jsc.isValid()) {
-                    to.writeFile(configuration, entry, jsc.value);
+                    to.writeEntry(configuration, entry, jsc.value);
                 }
+            }
+        }
+    }
+
+    public void removeAllFilesLocally() {
+        removeAllFiles(Target.LOCAL);
+    }
+
+    public void removeAllFilesNet() {
+        removeAllFiles(Target.NET);
+    }
+
+    public void removeAllFiles(Target target) {
+        ISync from = getSync(target);
+        if (from == null) {
+            System.out.println("Unknown target");
+            return;
+        }
+        JoltArrayOfStringsContainer jaos = new JoltArrayOfStringsContainer();
+        from.getAllEntries(configuration, jaos);
+        if (jaos.isValid()) {
+            JoltStringContainer jsc = new JoltStringContainer();
+            for (String entry :jaos.value) {
+                jsc.clear();
+                from.removeEntry(configuration, entry);
             }
         }
     }

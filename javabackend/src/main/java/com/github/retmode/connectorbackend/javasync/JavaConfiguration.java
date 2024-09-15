@@ -1,13 +1,19 @@
 package com.github.retmode.connectorbackend.javasync;
 
 import java.io.File;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.github.retmode.connectorbase.backend.IConfiguration;
 
-import com.badlogic.gdx.utils.JsonReader;
-import com.badlogic.gdx.utils.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
+import jakarta.json.JsonStructure;
 
 public class JavaConfiguration implements IConfiguration {
     private final File workdir;
@@ -51,8 +57,8 @@ public class JavaConfiguration implements IConfiguration {
             try {
                 configPath = configFilePath.getParentFile();
                 String jsonString = Files.readString(configFilePath.toPath());
-                JsonReader reader = new JsonReader();
-                JsonValue json = reader.parse(jsonString).get(gameName);
+                JsonReader reader = Json.createReader(new StringReader(jsonString));
+                JsonObject json = reader.read().asJsonObject().getJsonObject(gameName);
                 if (json != null) {
                     gameKey = json.getString("GameKey");
                     gameID = json.getString("GameID");

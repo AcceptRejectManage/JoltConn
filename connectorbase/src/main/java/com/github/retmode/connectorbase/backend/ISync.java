@@ -10,7 +10,8 @@ import com.github.retmode.connectorbase.metaobject.MetaDataObject;
 public interface ISync {
     public void getEntry(String key, IConfiguration configuration, JoltStringContainer result);
     public void getAllEntries(IConfiguration configuration, JoltArrayOfStringsContainer result) ;
-    public void writeFile(IConfiguration configuration, String path, String data);
+    public void writeEntry(IConfiguration configuration, String key, String data);
+    public void removeEntry(IConfiguration configuration, String key);
     public void writeMetaFiles(IConfiguration configuration, MetaDataObject metaDataObject);
     public MessageDigest getSha();
 }

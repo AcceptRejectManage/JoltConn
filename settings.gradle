@@ -6,3 +6,4 @@ plugins {
 rootProject.name = 'JoltConn'
 include('connectorbase')
 include('javabackend')
+include('application')
